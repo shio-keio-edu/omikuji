@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>食いしん坊みくじ☆｜今日のメシ運うらない</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Hachi+Maru+Pop&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --pink:#FF6FB5;
+  --pink-deep:#F23A8F;
+  --purple:#C9A0F0;
+  --mizu:#9FD8F5;
+  --cream:#FFF6FA;
+  --yellow:#FFE066;
+  --choco:#8A5A44;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{
+  font-family:'Zen Maru Gothic',sans-serif;
+  color:var(--choco);
+  min-height:100dvh;
+  display:flex;flex-direction:column;align-items:center;
+  overflow-x:hidden;
+  background:
+    radial-gradient(circle at 18% 22%, rgba(255,255,255,.55) 0 7px, transparent 8px),
+    radial-gradient(circle at 72% 12%, rgba(255,255,255,.5) 0 5px, transparent 6px),
+    radial-gradient(circle at 85% 65%, rgba(255,255,255,.5) 0 6px, transparent 7px),
+    radial-gradient(circle at 30% 80%, rgba(255,255,255,.5) 0 6px, transparent 7px),
+    linear-gradient(160deg, #FFD3E8 0%, #FFB8DC 35%, #E3C8FA 75%, #C5E6FB 100%);
+  background-attachment:fixed;
+}
+/* ふわふわキラキラ */
+.spark{position:fixed;font-size:18px;opacity:.8;pointer-events:none;z-index:0;animation:twinkle 2.6s ease-in-out infinite}
+.spark.s1{top:10%;left:8%}
+.spark.s2{top:22%;right:10%;animation-delay:.7s}
+.spark.s3{bottom:28%;left:12%;animation-delay:1.3s}
+.spark.s4{bottom:12%;right:14%;animation-delay:.4s;font-size:24px}
+@keyframes twinkle{0%,100%{transform:scale(1) rotate(0deg);opacity:.8}50%{transform:scale(1.4) rotate(20deg);opacity:.3}}
+@media (prefers-reduced-motion: reduce){.spark{animation:none}}
+
+main{
+  position:relative;z-index:1;width:100%;max-width:430px;
+  padding:40px 22px 60px;display:flex;flex-direction:column;align-items:center;
+}
+.eyebrow{
+  font-size:12px;letter-spacing:.2em;color:var(--pink-deep);
+  background:#fff;border:2px dotted var(--pink);border-radius:999px;
+  padding:5px 16px;margin-bottom:14px;font-weight:700;
+}
+h1{
+  font-family:'Hachi Maru Pop',cursive;
+  font-size:32px;line-height:1.45;text-align:center;
+  color:var(--pink-deep);
+  text-shadow:2px 2px 0 #fff, -2px 2px 0 #fff, 2px -2px 0 #fff, -2px -2px 0 #fff, 4px 5px 0 rgba(201,160,240,.6);
+}
+.date{
+  margin-top:10px;font-size:12px;letter-spacing:.15em;color:#a06a85;
+  background:rgba(255,255,255,.7);border-radius:999px;padding:4px 14px;
+}
+.ribbon{font-size:22px;margin:18px 0 22px;letter-spacing:.4em;text-indent:.4em}
+
+/* 入力 */
+.entry{
+  width:100%;display:flex;flex-direction:column;gap:14px;
+  background:rgba(255,255,255,.75);
+  border:3px solid #fff;border-radius:24px;
+  padding:24px 20px;
+  box-shadow:0 8px 30px rgba(242,58,143,.18);
+}
+.entry label{font-size:13px;font-weight:700;color:var(--pink-deep);letter-spacing:.08em}
+.entry input{
+  width:100%;padding:15px 18px;font-size:18px;
+  font-family:'Zen Maru Gothic',sans-serif;
+  background:#fff;border:2px solid var(--purple);
+  border-radius:16px;color:var(--choco);outline:none;transition:border-color .2s, box-shadow .2s;
+}
+.entry input:focus{border-color:var(--pink);box-shadow:0 0 0 4px rgba(255,111,181,.2)}
+.entry input::placeholder{color:#d4b8c8}
+.draw-btn{
+  margin-top:6px;padding:17px;
+  font-family:'Hachi Maru Pop',cursive;
+  font-size:17px;letter-spacing:.15em;
+  background:linear-gradient(180deg, var(--pink) 0%, var(--pink-deep) 100%);
+  color:#fff;border:3px solid #fff;border-radius:999px;cursor:pointer;
+  box-shadow:0 6px 0 #d12578, 0 10px 24px rgba(242,58,143,.35);
+  transition:transform .12s, box-shadow .12s;
+  text-shadow:1px 1px 0 rgba(0,0,0,.15);
+}
+.draw-btn:active{transform:translateY(4px);box-shadow:0 2px 0 #d12578}
+.draw-btn:focus-visible,.entry input:focus-visible,.share-x:focus-visible,.share-copy:focus-visible,.retry:focus-visible{
+  outline:3px solid var(--mizu);outline-offset:2px;
+}
+.note{font-size:11px;color:#b08aa0;text-align:center;letter-spacing:.03em}
+
+/* 結果：プリクラ風フレーム */
+#result{display:none;width:100%;flex-direction:column;align-items:center}
+.puri{
+  width:100%;max-width:350px;position:relative;
+  background:#fff;
+  border-radius:26px;
+  padding:14px;
+  box-shadow:0 14px 44px rgba(242,58,143,.3);
+  animation:pop .55s cubic-bezier(.2,1.4,.4,1) both;
+}
+@keyframes pop{from{transform:scale(.6) rotate(-4deg);opacity:0}to{transform:scale(1) rotate(0);opacity:1}}
+@media (prefers-reduced-motion: reduce){.puri{animation:none}}
+.puri-inner{
+  border:3px dashed var(--pink);
+  border-radius:18px;
+  background:
+    radial-gradient(circle at 12% 8%, rgba(255,224,102,.35) 0 26px, transparent 27px),
+    radial-gradient(circle at 90% 90%, rgba(159,216,245,.4) 0 30px, transparent 31px),
+    linear-gradient(170deg,#FFF6FA 0%, #FFE9F4 100%);
+  padding:22px 18px 18px;
+  position:relative;overflow:hidden;
+}
+.corner{position:absolute;font-size:22px}
+.corner.tl{top:6px;left:8px}
+.corner.tr{top:6px;right:8px}
+.corner.bl{bottom:6px;left:8px}
+.corner.br{bottom:6px;right:8px}
+.puri-head{text-align:center;margin-bottom:6px}
+.who{font-size:12px;color:#b07a96;letter-spacing:.1em}
+.who b{display:block;font-family:'Hachi Maru Pop',cursive;font-size:18px;color:var(--choco);margin-top:2px}
+.rank{
+  font-family:'Hachi Maru Pop',cursive;
+  font-size:36px;color:var(--pink-deep);text-align:center;line-height:1.3;
+  text-shadow:2px 2px 0 #fff,-2px 2px 0 #fff,2px -2px 0 #fff,-2px -2px 0 #fff,3px 4px 0 rgba(255,224,102,.9);
+  margin:4px 0 10px;
+}
+.kanji-wrap{text-align:center;margin-bottom:14px}
+.kanji-label{
+  display:inline-block;font-size:11px;letter-spacing:.2em;color:#fff;font-weight:700;
+  background:var(--purple);border-radius:999px;padding:4px 14px;margin-bottom:6px;
+}
+.kanji{
+  font-family:'Hachi Maru Pop',cursive;
+  font-size:78px;line-height:1.2;color:var(--choco);
+  text-shadow:3px 3px 0 var(--yellow);
+}
+.kanji-yomi{font-size:12px;color:#b07a96;letter-spacing:.12em}
+.luck-rows{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+.luck-row{
+  display:flex;align-items:center;gap:10px;font-size:13px;font-weight:700;
+  background:rgba(255,255,255,.8);border-radius:999px;padding:7px 14px;
+}
+.luck-row .nm{width:4.2em;color:var(--pink-deep);letter-spacing:.06em}
+.hearts{font-size:15px;letter-spacing:2px;color:var(--pink)}
+.hearts .off{color:#f0d5e2}
+.lucky{display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px;margin-bottom:14px}
+.lucky div{
+  background:#fff;border:2px solid var(--mizu);border-radius:14px;
+  padding:9px 11px;font-weight:700;color:var(--choco);
+}
+.lucky span{display:block;font-size:10px;letter-spacing:.12em;color:#7eb8d6;margin-bottom:3px}
+.kotoba{
+  font-size:13px;line-height:1.95;color:#7a5a6a;font-weight:500;
+  background:rgba(255,255,255,.85);
+  border-radius:14px;padding:12px 14px;
+  border:2px dotted var(--pink);
+}
+.puri-foot{
+  text-align:center;font-size:10px;letter-spacing:.25em;
+  color:#d49ab8;margin-top:10px;
+}
+
+/* シェア */
+.share-area{width:100%;max-width:350px;margin-top:22px;display:flex;flex-direction:column;gap:10px}
+.share-x{
+  padding:16px;border:3px solid #fff;border-radius:999px;cursor:pointer;
+  background:#000;color:#fff;font-size:15px;font-weight:900;
+  letter-spacing:.05em;font-family:'Zen Maru Gothic',sans-serif;
+  box-shadow:0 5px 0 #555, 0 10px 20px rgba(0,0,0,.25);
+  transition:transform .12s, box-shadow .12s;
+}
+.share-x:active{transform:translateY(3px);box-shadow:0 2px 0 #555}
+.share-copy{
+  padding:14px;border-radius:999px;cursor:pointer;font-size:14px;font-weight:700;
+  font-family:'Zen Maru Gothic',sans-serif;letter-spacing:.05em;
+  background:#fff;color:var(--pink-deep);border:2px solid var(--pink);
+}
+.retry{
+  padding:12px;border:none;background:transparent;cursor:pointer;
+  font-family:'Zen Maru Gothic',sans-serif;font-size:13px;font-weight:700;
+  color:#a06a85;text-decoration:underline wavy var(--purple);text-underline-offset:5px;
+}
+</style>
+</head>
+<body>
+<span class="spark s1">✨</span>
+<span class="spark s2">⭐</span>
+<span class="spark s3">💫</span>
+<span class="spark s4">✨</span>
+<main>
+  <p class="eyebrow">♡ 毎日ひける メシ運うらない ♡</p>
+  <h1>食いしん坊みくじ☆</h1>
+  <p class="date" id="today"></p>
+  <p class="ribbon">🍓🎀🍮🎀🍓</p>
+
+  <section class="entry" id="entry">
+    <label for="name">♡ なまえをいれてね（ニックネームでOK）</label>
+    <input id="name" type="text" maxlength="20" placeholder="例：しお" autocomplete="off">
+    <button class="draw-btn" id="draw">はらぺこで引く♡</button>
+    <p class="note">同じ名前なら今日いちにち同じ結果☆ 友達とメシ運くらべてね</p>
+  </section>
+
+  <section id="result">
+    <div class="puri" id="strip">
+      <div class="puri-inner">
+        <span class="corner tl">🎀</span><span class="corner tr">⭐</span>
+        <span class="corner bl">🍒</span><span class="corner br">💖</span>
+        <div class="puri-head">
+          <div class="who">きょうのメシ運<b id="rName"></b></div>
+        </div>
+        <div class="rank" id="rRank"></div>
+        <div class="kanji-wrap">
+          <span class="kanji-label">きょうの食べたい漢字</span>
+          <p class="kanji" id="rKanji"></p>
+          <p class="kanji-yomi" id="rYomi"></p>
+        </div>
+        <div class="luck-rows" id="rLucks"></div>
+        <div class="lucky">
+          <div><span>♡ 開運メニュー</span><b id="rMenu"></b></div>
+          <div><span>♡ 魔法の調味料</span><b id="rSpice"></b></div>
+        </div>
+        <p class="kotoba" id="rWord"></p>
+        <p class="puri-foot">— KUISHINBO MIKUJI —</p>
+      </div>
+    </div>
+    <div class="share-area">
+      <button class="share-x" id="shareX">𝕏 にのせる☆</button>
+      <button class="share-copy" id="shareCopy">結果をコピーする♡</button>
+      <button class="retry" id="retry">べつの名前で引きなおす</button>
+    </div>
+  </section>
+</main>
+
+<script>
+// 公開URLが決まったらここに入れると、シェア文の末尾に自動で付きます
+const SITE_URL = "";
+
+function xmur3(str){
+  let h = 1779033703 ^ str.length;
+  for(let i=0;i<str.length;i++){
+    h = Math.imul(h ^ str.charCodeAt(i), 3432918353);
+    h = h<<13 | h>>>19;
+  }
+  return function(){
+    h = Math.imul(h ^ (h>>>16), 2246822507);
+    h = Math.imul(h ^ (h>>>13), 3266489909);
+    return (h ^= h>>>16) >>> 0;
+  };
+}
+function mulberry32(a){
+  return function(){
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    let t = Math.imul(a ^ a>>>15, 1 | a);
+    t = t + Math.imul(t ^ t>>>7, 61 | t) ^ t;
+    return ((t ^ t>>>14) >>> 0) / 4294967296;
+  };
+}
+
+const RANKS = [
+  {n:"特盛吉☆", w:8},{n:"大盛吉", w:18},{n:"並盛吉", w:26},
+  {n:"小盛吉", w:22},{n:"おかわり吉", w:18},{n:"腹八分", w:8}
+];
+const KANJI = [
+  ["麺","めん"],["肉","にく"],["米","こめ"],["揚","あげもの"],["甘","スイーツ"],
+  ["辛","からうま"],["鍋","なべ"],["丼","どんぶり"],["寿","おすし"],["焼","やきもの"],
+  ["汁","しる"],["卵","たまご"],["麦","パン・ピザ"],["蒸","せいろ"],["餅","もち"],
+  ["旨","うまみ"],["菓","おやつ"],["茶","ティータイム"],["脂","こってり"],["菜","やさい"],
+  ["粉","粉もん"],["苺","いちご"],["氷","ひんやり"],["温","あったか"]
+];
+const MENUS = [
+  "いちごパフェ","からあげ","プリンアラモード","TKG（卵かけごはん）","たい焼き",
+  "餃子","カレー","おにぎり（鮭）","ハンバーグ","クレープ",
+  "焼肉（タン塩から）","コンビニの新作スイーツ","お好み焼き","親子丼","メロンパン",
+  "ナポリタン","チャーハン","ポテト（Lサイズ）","オムライス","フルーツサンド"
+];
+const SPICES = [
+  "マヨネーズ","七味とうがらし","バター","黒こしょう","ごま油",
+  "ポン酢","はちみつ","柚子こしょう","ラー油","めんつゆ",
+  "粉チーズ","わさび","ケチャップ","しょうが","練乳"
+];
+const WORDS = {
+  "特盛吉☆":["何を食べてもうまい日☆ 迷ったら大きいほうを注文せよ！","今日のあなたに「別腹」の限界はナシ！デザートまで完走すべし♡"],
+  "大盛吉":["ごはん大盛り無料の声が聞こえたら、それは運命。断っちゃダメ！","ランチの一皿が今日のハイライト☆ スマホより先にお箸を持って！"],
+  "並盛吉":["いつもの定番がいちばんおいしい日。冒険は明日にとっておこ♡","並盛りでちょうどいい☆ しあわせは量じゃなくて湯気の中にあるよ"],
+  "小盛吉":["小さくても確実においしいものを♡ コンビニスイーツに当たりあり！","ひとくちの幸せをかみしめる日。早食い禁止、味わったもん勝ち☆"],
+  "おかわり吉":["一杯目は前菜です。本番はおかわりから始まる…！","夜にかけてメシ運上昇中⤴ 晩ごはんに全力を残しておいて♡"],
+  "腹八分":["今日は胃腸をいたわる日。あったかい汁物が最強のおまもり♡","腹八分目は明日の特盛への仕込み☆ 早く寝てごはんの夢を見よ！"]
+};
+const LUCK_KEYS = ["肉運","麺運","甘味運","揚げ運"];
+
+function jstDateStr(){
+  const now = new Date(Date.now() + (9*60 + new Date().getTimezoneOffset())*60000);
+  const y=now.getFullYear(), m=now.getMonth()+1, d=now.getDate();
+  const youbi="日月火水木金土"[now.getDay()];
+  return {seed:`${y}-${m}-${d}`, disp:`${y}年${m}月${d}日（${youbi}）`};
+}
+function pickWeighted(rnd, arr){
+  const total = arr.reduce((s,a)=>s+a.w,0);
+  let r = rnd()*total;
+  for(const a of arr){ if((r-=a.w)<0) return a.n; }
+  return arr[arr.length-1].n;
+}
+function hearts(n){
+  let s="";
+  for(let i=0;i<5;i++) s += i<n ? "♥" : '<span class="off">♥</span>';
+  return s;
+}
+function heartsPlain(n){ return "💗".repeat(n)+"🤍".repeat(5-n); }
+// Xの加重カウント（ASCII等=1、全角・絵文字=2、URLは呼び出し側で23換算）
+function tweetWeight(text){
+  let w = 0;
+  for(const ch of text.replace(/https?:\/\/\S+/g, "")){
+    const c = ch.codePointAt(0);
+    w += (c <= 0x10FF || (c >= 0x2000 && c <= 0x200D) || (c >= 0x2010 && c <= 0x201F)) ? 1 : 2;
+  }
+  if(/https?:\/\/\S+/.test(text)) w += 23;
+  return w;
+}
+
+const {seed:dateSeed, disp:dateDisp} = jstDateStr();
+document.getElementById("today").textContent = dateDisp;
+
+let lastShare = "";
+
+function divine(name){
+  const rnd = mulberry32(xmur3(name + "|" + dateSeed)());
+  const rank = pickWeighted(rnd, RANKS);
+  const [kanji,yomi] = KANJI[Math.floor(rnd()*KANJI.length)];
+  const lucks = LUCK_KEYS.map(k=>({k, v: 1+Math.floor(rnd()*5)}));
+  const menu = MENUS[Math.floor(rnd()*MENUS.length)];
+  const spice = SPICES[Math.floor(rnd()*SPICES.length)];
+  const words = WORDS[rank];
+  const word  = words[Math.floor(rnd()*words.length)];
+  return {rank,kanji,yomi,lucks,menu,spice,word};
+}
+
+document.getElementById("draw").addEventListener("click", ()=>{
+  const name = document.getElementById("name").value.trim();
+  if(!name){ document.getElementById("name").focus(); return; }
+  const r = divine(name);
+
+  document.getElementById("rName").textContent = name + " ちゃん";
+  document.getElementById("rRank").textContent = "【" + r.rank + "】";
+  document.getElementById("rKanji").textContent = r.kanji;
+  document.getElementById("rYomi").textContent = "〜 " + r.yomi + " 〜";
+  document.getElementById("rLucks").innerHTML = r.lucks.map(l=>
+    `<div class="luck-row"><span class="nm">${l.k}</span><span class="hearts">${hearts(l.v)}</span></div>`
+  ).join("");
+  document.getElementById("rMenu").textContent = r.menu;
+  document.getElementById("rSpice").textContent = r.spice;
+  document.getElementById("rWord").textContent = r.word;
+
+  // ツイートはコンパクト版（Xは全角=2カウント・上限280、URLは一律23）
+  const luckLine = r.lucks.map(l=>`${l.k[0]}♥${l.v}`).join(" ");
+  lastShare =
+`🍓食いしん坊みくじ🍓
+${name}のメシ運→${r.rank}
+きょうの漢字『${r.kanji}』
+${luckLine}
+開運メニュー：${r.menu}
+#食いしん坊みくじ` + (SITE_URL ? "\n" + SITE_URL : "");
+
+  // 念のため超過時はメニュー行を落とす
+  if(tweetWeight(lastShare) > 280){
+    lastShare =
+`🍓食いしん坊みくじ🍓
+${name}のメシ運→${r.rank}
+きょうの漢字『${r.kanji}』
+${luckLine}
+#食いしん坊みくじ` + (SITE_URL ? "\n" + SITE_URL : "");
+  }
+
+  document.getElementById("entry").style.display = "none";
+  document.getElementById("result").style.display = "flex";
+  const strip = document.getElementById("strip");
+  strip.style.animation = "none";
+  void strip.offsetHeight;
+  strip.style.animation = "";
+  window.scrollTo({top:0, behavior:"smooth"});
+});
+
+document.getElementById("shareX").addEventListener("click", ()=>{
+  const url = "https://twitter.com/intent/tweet?text=" + encodeURIComponent(lastShare);
+  window.open(url, "_blank");
+});
+
+document.getElementById("shareCopy").addEventListener("click", async (e)=>{
+  try{
+    await navigator.clipboard.writeText(lastShare);
+    e.target.textContent = "コピーできた〜☆";
+    setTimeout(()=>{ e.target.textContent = "結果をコピーする♡"; }, 1600);
+  }catch(_){
+    prompt("以下をコピーしてください", lastShare);
+  }
+});
+
+document.getElementById("retry").addEventListener("click", ()=>{
+  document.getElementById("result").style.display = "none";
+  document.getElementById("entry").style.display = "flex";
+  document.getElementById("name").value = "";
+  document.getElementById("name").focus();
+});
+
+document.getElementById("name").addEventListener("keydown", e=>{
+  if(e.key === "Enter") document.getElementById("draw").click();
+});
+</script>
+</body>
+</html>
