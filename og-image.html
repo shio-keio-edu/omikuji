@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>og-image</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Hachi+Maru+Pop&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --pink:#FF6FB5;
+  --pink-deep:#F23A8F;
+  --purple:#C9A0F0;
+  --mizu:#9FD8F5;
+  --yellow:#FFE066;
+  --choco:#8A5A44;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  width:1200px;height:630px;overflow:hidden;
+  font-family:'Zen Maru Gothic',sans-serif;color:var(--choco);
+  display:flex;align-items:center;justify-content:center;
+  background:
+    radial-gradient(circle at 12% 20%, rgba(255,255,255,.55) 0 14px, transparent 15px),
+    radial-gradient(circle at 88% 14%, rgba(255,255,255,.5) 0 10px, transparent 11px),
+    radial-gradient(circle at 92% 72%, rgba(255,255,255,.5) 0 12px, transparent 13px),
+    radial-gradient(circle at 8% 82%, rgba(255,255,255,.5) 0 12px, transparent 13px),
+    linear-gradient(160deg, #FFD3E8 0%, #FFB8DC 35%, #E3C8FA 75%, #C5E6FB 100%);
+}
+.spark{position:absolute;font-size:44px;opacity:.85}
+.s1{top:44px;left:70px}
+.s2{top:70px;right:90px;font-size:56px}
+.s3{bottom:60px;left:110px;font-size:52px}
+.s4{bottom:90px;right:70px}
+.card{
+  position:relative;
+  background:#fff;border-radius:44px;padding:22px;
+  box-shadow:0 24px 70px rgba(242,58,143,.32);
+  transform:rotate(-1.2deg);
+}
+.card-inner{
+  border:5px dashed var(--pink);border-radius:30px;
+  background:
+    radial-gradient(circle at 10% 10%, rgba(255,224,102,.35) 0 52px, transparent 53px),
+    radial-gradient(circle at 92% 92%, rgba(159,216,245,.4) 0 60px, transparent 61px),
+    linear-gradient(170deg,#FFF6FA 0%, #FFE9F4 100%);
+  padding:44px 84px 40px;
+  position:relative;text-align:center;
+}
+.corner{position:absolute;font-size:44px}
+.tl{top:14px;left:20px}.tr{top:14px;right:20px}
+.bl{bottom:14px;left:20px}.br{bottom:14px;right:20px}
+.eyebrow{
+  display:inline-block;font-size:24px;letter-spacing:.2em;color:var(--pink-deep);
+  background:#fff;border:4px dotted var(--pink);border-radius:999px;
+  padding:10px 34px;margin-bottom:24px;font-weight:700;
+}
+h1{
+  font-family:'Hachi Maru Pop',cursive;
+  font-size:104px;line-height:1.25;
+  color:var(--pink-deep);white-space:nowrap;
+  text-shadow:4px 4px 0 #fff, -4px 4px 0 #fff, 4px -4px 0 #fff, -4px -4px 0 #fff, 9px 11px 0 rgba(201,160,240,.6);
+}
+.ribbon{font-size:46px;margin:22px 0 26px;letter-spacing:.5em;text-indent:.5em}
+.pill{
+  display:inline-block;
+  font-family:'Hachi Maru Pop',cursive;font-size:30px;letter-spacing:.12em;
+  background:linear-gradient(180deg, var(--pink) 0%, var(--pink-deep) 100%);
+  color:#fff;border:5px solid #fff;border-radius:999px;
+  padding:16px 52px;
+  box-shadow:0 9px 0 #d12578, 0 16px 34px rgba(242,58,143,.35);
+  text-shadow:2px 2px 0 rgba(0,0,0,.15);
+}
+</style>
+</head>
+<body>
+<span class="spark s1">✨</span>
+<span class="spark s2">⭐</span>
+<span class="spark s3">💫</span>
+<span class="spark s4">✨</span>
+<div class="card">
+  <div class="card-inner">
+    <span class="corner tl">🎀</span><span class="corner tr">⭐</span>
+    <span class="corner bl">🍒</span><span class="corner br">💖</span>
+    <div><span class="eyebrow">♡ 毎日ひける メシ運うらない ♡</span></div>
+    <h1>食いしん坊みくじ☆</h1>
+    <p class="ribbon">🍓🎀🍮🎀🍓</p>
+    <div><span class="pill">なまえをいれて はらぺこで引く♡</span></div>
+  </div>
+</div>
+</body>
+</html>
