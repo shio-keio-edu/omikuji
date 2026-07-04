@@ -104,7 +104,7 @@ h1{
   text-shadow:1px 1px 0 rgba(0,0,0,.15);
 }
 .draw-btn:active{transform:translateY(4px);box-shadow:0 2px 0 #d12578}
-.draw-btn:focus-visible,.entry input:focus-visible,.share-x:focus-visible,.share-copy:focus-visible,.retry:focus-visible{
+.draw-btn:focus-visible,.entry input:focus-visible,.share-x:focus-visible,.share-copy:focus-visible,.share-save:focus-visible,.retry:focus-visible{
   outline:3px solid var(--mizu);outline-offset:2px;
 }
 .note{font-size:11px;color:#b08aa0;text-align:center;letter-spacing:.03em}
@@ -196,6 +196,11 @@ h1{
   font-family:'Zen Maru Gothic',sans-serif;letter-spacing:.05em;
   background:#fff;color:var(--pink-deep);border:2px solid var(--pink);
 }
+.share-save{
+  padding:14px;border-radius:999px;cursor:pointer;font-size:14px;font-weight:700;
+  font-family:'Zen Maru Gothic',sans-serif;letter-spacing:.05em;
+  background:#fff;color:#3E93BF;border:2px solid var(--mizu);
+}
 .retry{
   padding:12px;border:none;background:transparent;cursor:pointer;
   font-family:'Zen Maru Gothic',sans-serif;font-size:13px;font-weight:700;
@@ -246,6 +251,7 @@ h1{
     </div>
     <div class="share-area">
       <button class="share-x" id="shareX">𝕏 にのせる☆</button>
+      <button class="share-save" id="shareSave">結果を画像でほぞんする📸</button>
       <button class="share-copy" id="shareCopy">結果をコピーする♡</button>
       <button class="retry" id="retry">べつの名前で引きなおす</button>
     </div>
@@ -342,6 +348,7 @@ const {seed:dateSeed, disp:dateDisp} = jstDateStr();
 document.getElementById("today").textContent = dateDisp;
 
 let lastShare = "";
+let lastResult = null;
 
 function divine(name){
   const rnd = mulberry32(xmur3(name + "|" + dateSeed)());
@@ -359,6 +366,7 @@ document.getElementById("draw").addEventListener("click", ()=>{
   const name = document.getElementById("name").value.trim();
   if(!name){ document.getElementById("name").focus(); return; }
   const r = divine(name);
+  lastResult = {...r, name};
 
   document.getElementById("rName").textContent = name + " ちゃん";
   document.getElementById("rRank").textContent = "【" + r.rank + "】";
@@ -400,10 +408,183 @@ ${luckLine}
   window.scrollTo({top:0, behavior:"smooth"});
 });
 
-document.getElementById("shareX").addEventListener("click", ()=>{
+/* ===== 結果カードの画像化 ===== */
+function rrPath(ctx,x,y,w,h,r){
+  if(ctx.roundRect){ ctx.beginPath(); ctx.roundRect(x,y,w,h,r); return; }
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);
+  ctx.arcTo(x+w,y,x+w,y+h,r);
+  ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r);
+  ctx.arcTo(x,y,x+w,y,r);
+  ctx.closePath();
+}
+function wrapJa(ctx,text,maxW){
+  const lines=[]; let line="";
+  for(const ch of text){
+    if(line && ctx.measureText(line+ch).width>maxW){ lines.push(line); line=ch; }
+    else line+=ch;
+  }
+  if(line) lines.push(line);
+  return lines;
+}
+async function makeResultImage(){
+  await document.fonts.ready;
+  const W=1080,H=1440;
+  const cv=document.createElement("canvas"); cv.width=W; cv.height=H;
+  const ctx=cv.getContext("2d");
+  const r=lastResult;
+  ctx.textAlign="center"; ctx.textBaseline="middle";
+
+  // 背景グラデ＋白ドット＋キラキラ
+  const g=ctx.createLinearGradient(0,0,W*.35,H);
+  g.addColorStop(0,"#FFD3E8"); g.addColorStop(.35,"#FFB8DC");
+  g.addColorStop(.75,"#E3C8FA"); g.addColorStop(1,"#C5E6FB");
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle="rgba(255,255,255,.5)";
+  [[130,180,16],[950,120,12],[1000,1010,14],[90,1180,14],[540,70,10],[150,700,10]]
+    .forEach(([dx,dy,dr])=>{ ctx.beginPath(); ctx.arc(dx,dy,dr,0,7); ctx.fill(); });
+  ctx.font="52px serif";
+  ctx.fillText("✨",84,96); ctx.fillText("⭐",996,180);
+  ctx.fillText("💫",64,1340); ctx.fillText("✨",1016,1396);
+
+  // 白カード＋点線フレーム
+  ctx.save();
+  ctx.shadowColor="rgba(242,58,143,.3)"; ctx.shadowBlur=50; ctx.shadowOffsetY=18;
+  ctx.fillStyle="#fff"; rrPath(ctx,56,60,W-112,H-140,52); ctx.fill();
+  ctx.restore();
+  const ix=84,iy=88,iw=W-168,ih=H-196;
+  const ig=ctx.createLinearGradient(0,iy,0,iy+ih);
+  ig.addColorStop(0,"#FFF6FA"); ig.addColorStop(1,"#FFE9F4");
+  ctx.fillStyle=ig; rrPath(ctx,ix,iy,iw,ih,38); ctx.fill();
+  ctx.strokeStyle="#FF6FB5"; ctx.lineWidth=5; ctx.setLineDash([18,12]);
+  rrPath(ctx,ix,iy,iw,ih,38); ctx.stroke(); ctx.setLineDash([]);
+  ctx.font="54px serif";
+  ctx.fillText("🎀",ix+56,iy+58); ctx.fillText("⭐",ix+iw-56,iy+58);
+  ctx.fillText("🍒",ix+56,iy+ih-58); ctx.fillText("💖",ix+iw-56,iy+ih-58);
+
+  const cx=W/2;
+  // 見出し・名前
+  ctx.fillStyle="#b07a96"; ctx.font="700 27px 'Zen Maru Gothic'";
+  ctx.fillText("♡ きょうのメシ運 ♡",cx,176);
+  ctx.fillStyle="#8A5A44"; ctx.font="46px 'Hachi Maru Pop'";
+  ctx.fillText(r.name+" ちゃん",cx,240);
+  // ランク（白フチ＋黄色シャドウ）
+  const rankTxt="【"+r.rank+"】";
+  ctx.font="88px 'Hachi Maru Pop'"; ctx.lineJoin="round";
+  ctx.fillStyle="rgba(255,224,102,.9)"; ctx.fillText(rankTxt,cx+6,333);
+  ctx.strokeStyle="#fff"; ctx.lineWidth=16; ctx.strokeText(rankTxt,cx,326);
+  ctx.fillStyle="#F23A8F"; ctx.fillText(rankTxt,cx,326);
+  // 紫ピル
+  ctx.font="700 26px 'Zen Maru Gothic'";
+  const plTxt="きょうの食べたい漢字";
+  const plW=ctx.measureText(plTxt).width+72;
+  ctx.fillStyle="#C9A0F0"; rrPath(ctx,cx-plW/2,412-31,plW,62,31); ctx.fill();
+  ctx.fillStyle="#fff"; ctx.fillText(plTxt,cx,414);
+  // 漢字（黄色シャドウ）
+  ctx.font="180px 'Hachi Maru Pop'";
+  ctx.fillStyle="#FFE066"; ctx.fillText(r.kanji,cx+8,556);
+  ctx.fillStyle="#8A5A44"; ctx.fillText(r.kanji,cx,548);
+  ctx.fillStyle="#b07a96"; ctx.font="700 30px 'Zen Maru Gothic'";
+  ctx.fillText("〜 "+r.yomi+" 〜",cx,652);
+  // 運勢4行（ハート）
+  let y=706;
+  const rw=640,rh=58;
+  for(const l of r.lucks){
+    ctx.fillStyle="rgba(255,255,255,.9)"; rrPath(ctx,cx-rw/2,y-rh/2,rw,rh,rh/2); ctx.fill();
+    ctx.textAlign="left";
+    ctx.fillStyle="#F23A8F"; ctx.font="700 32px 'Zen Maru Gothic'";
+    ctx.fillText(l.k,cx-rw/2+44,y+2);
+    let hx=cx-rw/2+270;
+    ctx.font="34px 'Zen Maru Gothic'";
+    for(let i=0;i<5;i++){ ctx.fillStyle=i<l.v?"#FF6FB5":"#F0D5E2"; ctx.fillText("♥",hx,y+2); hx+=54; }
+    ctx.textAlign="center";
+    y+=rh+12;
+  }
+  // 開運メニュー・調味料
+  y+=10;
+  const bw=(iw-64-24)/2, bh=112, bx1=ix+32, bx2=bx1+bw+24;
+  [[bx1,"♡ 開運メニュー",r.menu],[bx2,"♡ 魔法の調味料",r.spice]].forEach(([bx,label,val])=>{
+    ctx.fillStyle="#fff"; rrPath(ctx,bx,y,bw,bh,24); ctx.fill();
+    ctx.strokeStyle="#9FD8F5"; ctx.lineWidth=4; rrPath(ctx,bx,y,bw,bh,24); ctx.stroke();
+    ctx.fillStyle="#7eb8d6"; ctx.font="700 22px 'Zen Maru Gothic'";
+    ctx.fillText(label,bx+bw/2,y+32);
+    let fs=34; ctx.font="900 "+fs+"px 'Zen Maru Gothic'";
+    while(ctx.measureText(val).width>bw-40 && fs>20){ fs-=2; ctx.font="900 "+fs+"px 'Zen Maru Gothic'"; }
+    ctx.fillStyle="#8A5A44"; ctx.fillText(val,bx+bw/2,y+76);
+  });
+  y+=bh+24;
+  // ひとこと
+  ctx.font="500 28px 'Zen Maru Gothic'";
+  const kx=ix+32, kw=iw-64;
+  const lines=wrapJa(ctx,r.word,kw-76).slice(0,3);
+  const kh=lines.length*42+38;
+  ctx.fillStyle="rgba(255,255,255,.9)"; rrPath(ctx,kx,y,kw,kh,22); ctx.fill();
+  ctx.strokeStyle="#FF6FB5"; ctx.lineWidth=3; ctx.lineCap="round"; ctx.setLineDash([2,10]);
+  rrPath(ctx,kx,y,kw,kh,22); ctx.stroke(); ctx.setLineDash([]);
+  ctx.fillStyle="#7a5a6a";
+  lines.forEach((ln,i)=>ctx.fillText(ln,cx,y+38+i*42));
+  y+=kh+34;
+  // フッター（日付＋クレジット）
+  ctx.fillStyle="#d49ab8"; ctx.font="700 22px 'Zen Maru Gothic'";
+  ctx.fillText(dateDisp+"  — KUISHINBO MIKUJI —",cx,Math.min(y,iy+ih-40));
+  return cv;
+}
+function canvasToBlob(cv){ return new Promise(res=>cv.toBlob(res,"image/png")); }
+const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+  || (navigator.maxTouchPoints>1 && /Mac/.test(navigator.userAgent));
+
+document.getElementById("shareX").addEventListener("click", async ()=>{
+  if(!lastResult) return;
+  // スマホ：共有シートで画像つきシェア（Xアプリを選べば画像が添付される）
+  if(isMobile && navigator.canShare){
+    try{
+      const blob = await canvasToBlob(await makeResultImage());
+      const file = new File([blob], "kuishinbo-mikuji.png", {type:"image/png"});
+      if(navigator.canShare({files:[file]})){
+        await navigator.share({files:[file], text:lastShare});
+        return;
+      }
+    }catch(err){
+      if(err && err.name==="AbortError") return; // ユーザーがキャンセル
+      // 失敗したらテキストシェアにフォールバック
+    }
+  }
+  // PCなど：従来のテキスト＋URLシェア
   const url = "https://twitter.com/intent/tweet?text=" + encodeURIComponent(lastShare);
   window.open(url, "_blank");
 });
+
+document.getElementById("shareSave").addEventListener("click", async (e)=>{
+  if(!lastResult) return;
+  try{
+    const blob = await canvasToBlob(await makeResultImage());
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "kuishinbo-mikuji_" + dateSeed + ".png";
+    a.click();
+    setTimeout(()=>URL.revokeObjectURL(a.href), 4000);
+    e.target.textContent = "ほぞんした〜☆";
+    setTimeout(()=>{ e.target.textContent = "結果を画像でほぞんする📸"; }, 1600);
+  }catch(_){
+    e.target.textContent = "ごめん、失敗しちゃった…";
+    setTimeout(()=>{ e.target.textContent = "結果を画像でほぞんする📸"; }, 1600);
+  }
+});
+
+// 画像レイアウト確認用（開発時のみ使用）
+if(location.hash === "#test-image"){
+  window.addEventListener("load", async ()=>{
+    lastResult = {...divine("しお"), name:"しお"};
+    const cv = await makeResultImage();
+    document.body.innerHTML = "";
+    document.body.style.background = "#555";
+    const img = new Image();
+    img.src = cv.toDataURL();
+    img.style.cssText = "height:100vh;display:block;margin:0 auto";
+    document.body.appendChild(img);
+  });
+}
 
 document.getElementById("shareCopy").addEventListener("click", async (e)=>{
   try{
