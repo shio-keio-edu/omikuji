@@ -84,6 +84,15 @@ h1{
   padding:24px 20px;
   box-shadow:0 8px 30px rgba(242,58,143,.18);
 }
+.mode-tabs{display:flex;gap:8px}
+.mode-tabs button{
+  flex:1;padding:11px;font-family:'Zen Maru Gothic',sans-serif;font-size:13px;font-weight:700;
+  letter-spacing:.08em;border-radius:999px;border:2px solid var(--purple);
+  background:#fff;color:#a06a85;cursor:pointer;transition:background .15s,color .15s;
+}
+.mode-tabs button.on{background:var(--purple);color:#fff}
+.pair-only{display:none}
+.entry.pair .pair-only{display:block}
 .entry label{font-size:13px;font-weight:700;color:var(--pink-deep);letter-spacing:.08em}
 .entry input{
   width:100%;padding:15px 18px;font-size:18px;
@@ -144,6 +153,19 @@ h1{
   font-size:36px;color:var(--pink-deep);text-align:center;line-height:1.3;
   text-shadow:2px 2px 0 #fff,-2px 2px 0 #fff,2px -2px 0 #fff,-2px -2px 0 #fff,3px 4px 0 rgba(255,224,102,.9);
   margin:4px 0 10px;
+}
+/* 激レア「神盛吉☆」の金色演出 */
+.puri.rare{box-shadow:0 14px 44px rgba(212,160,23,.45)}
+.puri.rare .puri-inner{
+  border-color:#F0C420;
+  background:
+    radial-gradient(circle at 12% 8%, rgba(255,224,102,.5) 0 26px, transparent 27px),
+    radial-gradient(circle at 90% 90%, rgba(255,224,102,.45) 0 30px, transparent 31px),
+    linear-gradient(170deg,#FFFBEA 0%, #FFF3C4 100%);
+}
+.rank.rare{
+  color:#D4A017;
+  text-shadow:2px 2px 0 #fff,-2px 2px 0 #fff,2px -2px 0 #fff,-2px -2px 0 #fff,3px 4px 0 rgba(255,111,181,.55);
 }
 .kanji-wrap{text-align:center;margin-bottom:14px}
 .kanji-label{
@@ -220,10 +242,16 @@ h1{
   <p class="ribbon">🍓🎀🍮🎀🍓</p>
 
   <section class="entry" id="entry">
-    <label for="name">♡ なまえをいれてね（ニックネームでOK）</label>
+    <div class="mode-tabs">
+      <button id="tabSolo" class="on" type="button">ひとりで引く</button>
+      <button id="tabPair" type="button">ふたりで相性♡</button>
+    </div>
+    <label for="name" id="nameLabel">♡ なまえをいれてね（ニックネームでOK）</label>
     <input id="name" type="text" maxlength="20" placeholder="例：しお" autocomplete="off">
+    <label for="name2" class="pair-only">♡ もうひとりのなまえ</label>
+    <input id="name2" class="pair-only" type="text" maxlength="20" placeholder="例：しおしお" autocomplete="off">
     <button class="draw-btn" id="draw">はらぺこで引く♡</button>
-    <p class="note">同じ名前なら今日いちにち同じ結果☆ 友達とメシ運くらべてね</p>
+    <p class="note" id="noteText">同じ名前なら今日いちにち同じ結果☆ 友達とメシ運くらべてね</p>
   </section>
 
   <section id="result">
@@ -232,18 +260,18 @@ h1{
         <span class="corner tl">🎀</span><span class="corner tr">⭐</span>
         <span class="corner bl">🍒</span><span class="corner br">💖</span>
         <div class="puri-head">
-          <div class="who">きょうのメシ運<b id="rName"></b></div>
+          <div class="who"><span id="rWhoLabel">きょうのメシ運</span><b id="rName"></b></div>
         </div>
         <div class="rank" id="rRank"></div>
         <div class="kanji-wrap">
-          <span class="kanji-label">きょうの食べたい漢字</span>
+          <span class="kanji-label" id="rKanjiLabel">きょうの食べたい漢字</span>
           <p class="kanji" id="rKanji"></p>
           <p class="kanji-yomi" id="rYomi"></p>
         </div>
         <div class="luck-rows" id="rLucks"></div>
-        <div class="lucky">
-          <div><span>♡ 開運メニュー</span><b id="rMenu"></b></div>
-          <div><span>♡ 魔法の調味料</span><b id="rSpice"></b></div>
+        <div class="lucky" id="luckyGrid">
+          <div><span id="rMenuLabel">♡ 開運メニュー</span><b id="rMenu"></b></div>
+          <div id="spiceBox"><span>♡ 魔法の調味料</span><b id="rSpice"></b></div>
         </div>
         <p class="kotoba" id="rWord"></p>
         <p class="puri-foot">— KUISHINBO MIKUJI —</p>
@@ -361,6 +389,12 @@ const WORDS = {
     "腹八分目は明日の特盛への仕込み☆ 早く寝てごはんの夢を見よ！",
     "よく噛むほど運気が育つ日。ゆっくりごはんで明日のメシ運を仕込もう☆",
     "無理して食べない勇気も食いしん坊の実力のうち♡ 残りは明日のお楽しみ！"
+  ],
+  "神盛吉☆":[
+    "伝説の1%を引き当てた！今日のあなたは歩くグルメパワースポット☆",
+    "食の神様が完全に味方！気になってたお店、ぜんぶ当たりの日！",
+    "めったに出ない神メシ運☆ 今日食べたものはぜんぶ思い出になる！",
+    "限界も遠慮も今日はお休み♡ 神様公認で食べたいだけ食べていいの！"
   ]
 };
 const LUCK_KEYS = ["肉運","麺運","甘味運","揚げ運"];
@@ -402,51 +436,133 @@ let lastResult = null;
 
 function divine(name){
   const rnd = mulberry32(xmur3(name + "|" + dateSeed)());
-  const rank = pickWeighted(rnd, RANKS);
+  let rank = pickWeighted(rnd, RANKS);
+  // 1%の隠し激レア（別シードで判定するので、他の抽選結果には影響しない）
+  const rare = xmur3(name + "|" + dateSeed + "|rare")() % 100 === 0;
+  if(rare) rank = "神盛吉☆";
   const [kanji,yomi,menus] = KANJI[Math.floor(rnd()*KANJI.length)];
   const lucks = LUCK_KEYS.map(k=>({k, v: 1+Math.floor(rnd()*5)}));
   const menu = menus[Math.floor(rnd()*menus.length)];
   const spice = SPICES[Math.floor(rnd()*SPICES.length)];
   const words = WORDS[rank];
   const word  = words[Math.floor(rnd()*words.length)];
-  return {rank,kanji,yomi,lucks,menu,spice,word};
+  return {rank,rare,kanji,yomi,lucks,menu,spice,word};
+}
+
+/* ===== ふたりで相性みくじ ===== */
+// 高め寄り＋たまに極端な数字が出る重み付け（スクショ映え重視）
+const PAIR_TIERS = [
+  {min:120,max:120,w:2},{min:108,max:108,w:3},{min:95,max:100,w:10},
+  {min:85,max:94,w:26},{min:70,max:84,w:34},{min:55,max:69,w:17},{min:38,max:54,w:8}
+];
+const PAIR_WORDS = [
+  [120,["限界突破の神ペア☆ 前世はきっと同じ釜のメシ仲間！何を食べても伝説になる日！","相性メーター振り切れた！ふたりで新メニューを開拓すると爆アド確定☆"]],
+  [108,["煩悩の数だけ食べたいものを分かち合えるふたり♡ 食欲の神に祝福されてる！","じつは運命のメシ友かも…！今日は「いただきます」の声がハモる日☆"]],
+  [95,["奇跡のシンクロ率☆ 「せーの」で同じメニューを頼んじゃうかも！","以心伝心のメシ友♡ 無言でポテトを分け合えるレベルの日！"]],
+  [85,["ほぼ以心伝心♡ 「なんか食べたくない？」の一言で通じ合える日","メシ友運絶好調☆ 今日のごはんは一緒に食べると1.5倍おいしい！"]],
+  [70,["いいかんじのメシ友運☆ シェアして食べると運気アップだよ","食の趣味がいい感じにかみ合う日♡ 半分こが幸せを2倍にする！"]],
+  [55,["今日はお互いマイペースに食べたい日。デザートだけ一緒にどう？♡","別々のものを頼んで一口交換すると吉☆ 違いを楽しむのが今日のコツ！"]],
+  [0,["食の好みがすれ違いがち…でも大丈夫、おやつ交換すれば即回復☆","今日はあえて相手のおすすめに乗ってみて。新しい扉が開くかも♡"]]
+];
+function divinePair(a,b){
+  const [n1,n2] = [a,b].sort(); // 入れる順番が違っても同じ結果になる
+  const rnd = mulberry32(xmur3(n1 + "&" + n2 + "|" + dateSeed + "|pair")());
+  let t = PAIR_TIERS[PAIR_TIERS.length-1], rr = rnd()*100;
+  for(const tier of PAIR_TIERS){ if((rr-=tier.w)<0){ t=tier; break; } }
+  const pct = t.min + Math.floor(rnd()*(t.max-t.min+1));
+  const [kanji,yomi,menus] = KANJI[Math.floor(rnd()*KANJI.length)];
+  const menu = menus[Math.floor(rnd()*menus.length)];
+  const ws = PAIR_WORDS.find(([min])=>pct>=min)[1];
+  const word = ws[Math.floor(rnd()*ws.length)];
+  return {pct,kanji,yomi,menu,word,n1,n2};
+}
+
+/* ===== モード切替 ===== */
+let mode = "solo";
+function setMode(m){
+  mode = m;
+  document.getElementById("tabSolo").classList.toggle("on", m==="solo");
+  document.getElementById("tabPair").classList.toggle("on", m==="pair");
+  document.getElementById("entry").classList.toggle("pair", m==="pair");
+  document.getElementById("noteText").textContent = m==="pair"
+    ? "同じふたりなら今日いちにち同じ相性☆ 入れる順番はどっちでもOK"
+    : "同じ名前なら今日いちにち同じ結果☆ 友達とメシ運くらべてね";
+}
+document.getElementById("tabSolo").addEventListener("click", ()=>setMode("solo"));
+document.getElementById("tabPair").addEventListener("click", ()=>setMode("pair"));
+
+function renderSolo(r){
+  document.getElementById("rWhoLabel").textContent = "きょうのメシ運";
+  document.getElementById("rName").textContent = r.name + " ちゃん";
+  const rankEl = document.getElementById("rRank");
+  rankEl.textContent = "【" + r.rank + "】";
+  rankEl.classList.toggle("rare", !!r.rare);
+  document.getElementById("strip").classList.toggle("rare", !!r.rare);
+  document.getElementById("rKanjiLabel").textContent = "きょうの食べたい漢字";
+  document.getElementById("rKanji").textContent = r.kanji;
+  document.getElementById("rYomi").textContent = "〜 " + r.yomi + " 〜";
+  const lucksEl = document.getElementById("rLucks");
+  lucksEl.style.display = "";
+  lucksEl.innerHTML = r.lucks.map(l=>
+    `<div class="luck-row"><span class="nm">${l.k}</span><span class="hearts">${hearts(l.v)}</span></div>`
+  ).join("");
+  document.getElementById("rMenuLabel").textContent = "♡ 開運メニュー";
+  document.getElementById("rMenu").textContent = r.menu;
+  document.getElementById("spiceBox").style.display = "";
+  document.getElementById("luckyGrid").style.gridTemplateColumns = "";
+  document.getElementById("rSpice").textContent = r.spice;
+  document.getElementById("rWord").textContent = r.word;
+}
+function renderPair(r){
+  document.getElementById("rWhoLabel").textContent = "きょうのメシ友相性";
+  document.getElementById("rName").textContent = r.n1 + " ちゃん × " + r.n2 + " ちゃん";
+  const rankEl = document.getElementById("rRank");
+  rankEl.textContent = "相性 " + r.pct + "%";
+  rankEl.classList.remove("rare");
+  document.getElementById("strip").classList.remove("rare");
+  document.getElementById("rKanjiLabel").textContent = "ふたりの食べたい漢字";
+  document.getElementById("rKanji").textContent = r.kanji;
+  document.getElementById("rYomi").textContent = "〜 " + r.yomi + " 〜";
+  document.getElementById("rLucks").style.display = "none";
+  document.getElementById("rMenuLabel").textContent = "♡ ふたりの開運メニュー";
+  document.getElementById("rMenu").textContent = r.menu;
+  document.getElementById("spiceBox").style.display = "none";
+  document.getElementById("luckyGrid").style.gridTemplateColumns = "1fr";
+  document.getElementById("rWord").textContent = r.word;
+}
+// Xは全角=2カウント・上限280、URLは一律23。超過時はメニュー行を落とす
+function composeShare(body, bodyNoMenu){
+  const tail = "\n#食いしん坊みくじ" + (SITE_URL ? "\n" + SITE_URL : "");
+  let s = body + tail;
+  if(tweetWeight(s) > 280) s = bodyNoMenu + tail;
+  return s;
 }
 
 document.getElementById("draw").addEventListener("click", ()=>{
   const name = document.getElementById("name").value.trim();
   if(!name){ document.getElementById("name").focus(); return; }
-  const r = divine(name);
-  lastResult = {...r, name};
-
-  document.getElementById("rName").textContent = name + " ちゃん";
-  document.getElementById("rRank").textContent = "【" + r.rank + "】";
-  document.getElementById("rKanji").textContent = r.kanji;
-  document.getElementById("rYomi").textContent = "〜 " + r.yomi + " 〜";
-  document.getElementById("rLucks").innerHTML = r.lucks.map(l=>
-    `<div class="luck-row"><span class="nm">${l.k}</span><span class="hearts">${hearts(l.v)}</span></div>`
-  ).join("");
-  document.getElementById("rMenu").textContent = r.menu;
-  document.getElementById("rSpice").textContent = r.spice;
-  document.getElementById("rWord").textContent = r.word;
-
-  // ツイートはコンパクト版（Xは全角=2カウント・上限280、URLは一律23）
-  const luckLine = r.lucks.map(l=>`${l.k[0]}♥${l.v}`).join(" ");
-  lastShare =
+  if(mode === "pair"){
+    const name2 = document.getElementById("name2").value.trim();
+    if(!name2){ document.getElementById("name2").focus(); return; }
+    const r = divinePair(name, name2);
+    lastResult = {...r, mode:"pair"};
+    renderPair(r);
+    const base =
+`🍓食いしん坊みくじ🍓
+${r.n1}×${r.n2} メシ友相性→${r.pct}%
+きょうの漢字『${r.kanji}』`;
+    lastShare = composeShare(base + `\nふたりの開運メニュー：${r.menu}`, base);
+  }else{
+    const r = divine(name);
+    lastResult = {...r, name, mode:"solo"};
+    renderSolo({...r, name});
+    const luckLine = r.lucks.map(l=>`${l.k[0]}♥${l.v}`).join(" ");
+    const base =
 `🍓食いしん坊みくじ🍓
 ${name}のメシ運→${r.rank}
 きょうの漢字『${r.kanji}』
-${luckLine}
-開運メニュー：${r.menu}
-#食いしん坊みくじ` + (SITE_URL ? "\n" + SITE_URL : "");
-
-  // 念のため超過時はメニュー行を落とす
-  if(tweetWeight(lastShare) > 280){
-    lastShare =
-`🍓食いしん坊みくじ🍓
-${name}のメシ運→${r.rank}
-きょうの漢字『${r.kanji}』
-${luckLine}
-#食いしん坊みくじ` + (SITE_URL ? "\n" + SITE_URL : "");
+${luckLine}`;
+    lastShare = composeShare(base + `\n開運メニュー：${r.menu}`, base);
   }
 
   document.getElementById("entry").style.display = "none";
@@ -504,27 +620,86 @@ async function makeResultImage(){
   ctx.fillStyle="#fff"; rrPath(ctx,56,60,W-112,H-140,52); ctx.fill();
   ctx.restore();
   const ix=84,iy=88,iw=W-168,ih=H-196;
+  const rare = r.mode !== "pair" && !!r.rare;
   const ig=ctx.createLinearGradient(0,iy,0,iy+ih);
-  ig.addColorStop(0,"#FFF6FA"); ig.addColorStop(1,"#FFE9F4");
+  if(rare){ ig.addColorStop(0,"#FFFBEA"); ig.addColorStop(1,"#FFF3C4"); }
+  else{ ig.addColorStop(0,"#FFF6FA"); ig.addColorStop(1,"#FFE9F4"); }
   ctx.fillStyle=ig; rrPath(ctx,ix,iy,iw,ih,38); ctx.fill();
-  ctx.strokeStyle="#FF6FB5"; ctx.lineWidth=5; ctx.setLineDash([18,12]);
+  ctx.strokeStyle=rare?"#F0C420":"#FF6FB5"; ctx.lineWidth=5; ctx.setLineDash([18,12]);
   rrPath(ctx,ix,iy,iw,ih,38); ctx.stroke(); ctx.setLineDash([]);
   ctx.font="54px serif";
   ctx.fillText("🎀",ix+56,iy+58); ctx.fillText("⭐",ix+iw-56,iy+58);
   ctx.fillText("🍒",ix+56,iy+ih-58); ctx.fillText("💖",ix+iw-56,iy+ih-58);
 
   const cx=W/2;
+
+  if(r.mode === "pair"){
+    // ===== ふたりで相性みくじ用レイアウト =====
+    ctx.fillStyle="#b07a96"; ctx.font="700 27px 'Zen Maru Gothic'";
+    ctx.fillText("♡ きょうのメシ友相性 ♡",cx,176);
+    const nm = r.n1 + " ちゃん × " + r.n2 + " ちゃん";
+    let nfs=46; ctx.font=nfs+"px 'Hachi Maru Pop'";
+    while(ctx.measureText(nm).width>iw-140 && nfs>26){ nfs-=2; ctx.font=nfs+"px 'Hachi Maru Pop'"; }
+    ctx.fillStyle="#8A5A44"; ctx.fillText(nm,cx,246);
+    // 相性%（白フチ＋黄色シャドウ）
+    const pctTxt = r.pct + "%";
+    ctx.font="150px 'Hachi Maru Pop'"; ctx.lineJoin="round";
+    ctx.fillStyle="rgba(255,224,102,.9)"; ctx.fillText(pctTxt,cx+7,398);
+    ctx.strokeStyle="#fff"; ctx.lineWidth=18; ctx.strokeText(pctTxt,cx,390);
+    ctx.fillStyle="#F23A8F"; ctx.fillText(pctTxt,cx,390);
+    // 紫ピル＋漢字
+    ctx.font="700 26px 'Zen Maru Gothic'";
+    const plTxt2="ふたりの食べたい漢字";
+    const plW2=ctx.measureText(plTxt2).width+72;
+    ctx.fillStyle="#C9A0F0"; rrPath(ctx,cx-plW2/2,508-31,plW2,62,31); ctx.fill();
+    ctx.fillStyle="#fff"; ctx.fillText(plTxt2,cx,510);
+    ctx.font="170px 'Hachi Maru Pop'";
+    ctx.fillStyle="#FFE066"; ctx.fillText(r.kanji,cx+8,648);
+    ctx.fillStyle="#8A5A44"; ctx.fillText(r.kanji,cx,640);
+    ctx.fillStyle="#b07a96"; ctx.font="700 30px 'Zen Maru Gothic'";
+    ctx.fillText("〜 "+r.yomi+" 〜",cx,738);
+    // 開運メニュー（ワイド1枠）
+    let py=792;
+    const pbw=iw-64, pbx=ix+32, pbh=128;
+    ctx.fillStyle="#fff"; rrPath(ctx,pbx,py,pbw,pbh,24); ctx.fill();
+    ctx.strokeStyle="#9FD8F5"; ctx.lineWidth=4; rrPath(ctx,pbx,py,pbw,pbh,24); ctx.stroke();
+    ctx.fillStyle="#7eb8d6"; ctx.font="700 22px 'Zen Maru Gothic'";
+    ctx.fillText("♡ ふたりの開運メニュー",cx,py+36);
+    let pfs=40; ctx.font="900 "+pfs+"px 'Zen Maru Gothic'";
+    while(ctx.measureText(r.menu).width>pbw-60 && pfs>22){ pfs-=2; ctx.font="900 "+pfs+"px 'Zen Maru Gothic'"; }
+    ctx.fillStyle="#8A5A44"; ctx.fillText(r.menu,cx,py+86);
+    py+=pbh+34;
+    // ひとこと
+    ctx.font="500 28px 'Zen Maru Gothic'";
+    const pkx=ix+32, pkw=iw-64;
+    const plines=wrapJa(ctx,r.word,pkw-76).slice(0,3);
+    const pkh=plines.length*42+38;
+    ctx.fillStyle="rgba(255,255,255,.9)"; rrPath(ctx,pkx,py,pkw,pkh,22); ctx.fill();
+    ctx.strokeStyle="#FF6FB5"; ctx.lineWidth=3; ctx.lineCap="round"; ctx.setLineDash([2,10]);
+    rrPath(ctx,pkx,py,pkw,pkh,22); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle="#7a5a6a";
+    plines.forEach((ln,i)=>ctx.fillText(ln,cx,py+38+i*42));
+    py+=pkh+76;
+    // リボン飾り＋フッター
+    ctx.font="56px serif";
+    ctx.fillText("🍓 🎀 🍮 🎀 🍓",cx,Math.min(py,iy+ih-150));
+    ctx.fillStyle="#d49ab8"; ctx.font="700 22px 'Zen Maru Gothic'";
+    ctx.fillText(dateDisp+"  — KUISHINBO MIKUJI —",cx,iy+ih-40);
+    return cv;
+  }
+
+  // ===== ひとり用レイアウト =====
   // 見出し・名前
   ctx.fillStyle="#b07a96"; ctx.font="700 27px 'Zen Maru Gothic'";
   ctx.fillText("♡ きょうのメシ運 ♡",cx,176);
   ctx.fillStyle="#8A5A44"; ctx.font="46px 'Hachi Maru Pop'";
   ctx.fillText(r.name+" ちゃん",cx,240);
-  // ランク（白フチ＋黄色シャドウ）
+  // ランク（白フチ＋黄色シャドウ、激レアは金色）
   const rankTxt="【"+r.rank+"】";
   ctx.font="88px 'Hachi Maru Pop'"; ctx.lineJoin="round";
-  ctx.fillStyle="rgba(255,224,102,.9)"; ctx.fillText(rankTxt,cx+6,333);
+  ctx.fillStyle=rare?"rgba(255,111,181,.55)":"rgba(255,224,102,.9)"; ctx.fillText(rankTxt,cx+6,333);
   ctx.strokeStyle="#fff"; ctx.lineWidth=16; ctx.strokeText(rankTxt,cx,326);
-  ctx.fillStyle="#F23A8F"; ctx.fillText(rankTxt,cx,326);
+  ctx.fillStyle=rare?"#D4A017":"#F23A8F"; ctx.fillText(rankTxt,cx,326);
   // 紫ピル
   ctx.font="700 26px 'Zen Maru Gothic'";
   const plTxt="きょうの食べたい漢字";
@@ -623,9 +798,16 @@ document.getElementById("shareSave").addEventListener("click", async (e)=>{
 });
 
 // 画像レイアウト確認用（開発時のみ使用）
-if(location.hash === "#test-image"){
+if(location.hash.startsWith("#test-image")){
   window.addEventListener("load", async ()=>{
-    lastResult = {...divine("しお"), name:"しお"};
+    if(location.hash === "#test-image-pair"){
+      lastResult = {...divinePair("しお","しおしお"), mode:"pair"};
+    }else if(location.hash === "#test-image-rare"){
+      lastResult = {...divine("しお"), name:"しお", mode:"solo",
+        rank:"神盛吉☆", rare:true, word:WORDS["神盛吉☆"][0]};
+    }else{
+      lastResult = {...divine("しお"), name:"しお", mode:"solo"};
+    }
     const cv = await makeResultImage();
     document.body.innerHTML = "";
     document.body.style.background = "#555";
@@ -650,10 +832,14 @@ document.getElementById("retry").addEventListener("click", ()=>{
   document.getElementById("result").style.display = "none";
   document.getElementById("entry").style.display = "flex";
   document.getElementById("name").value = "";
+  document.getElementById("name2").value = "";
   document.getElementById("name").focus();
 });
 
 document.getElementById("name").addEventListener("keydown", e=>{
+  if(e.key === "Enter") document.getElementById("draw").click();
+});
+document.getElementById("name2").addEventListener("keydown", e=>{
   if(e.key === "Enter") document.getElementById("draw").click();
 });
 </script>
